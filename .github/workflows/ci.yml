@@ -40,4 +40,5 @@ jobs:
 
       - name: Kubernetes apply
         run: |
-          kubectl apply -f manifest.yaml
+          echo $(ls)
+          kubectl apply -f ./manifest.yaml
