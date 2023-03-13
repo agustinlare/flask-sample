@@ -52,8 +52,10 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
 
+
       - name: Scan Docker image
         uses: docker/scan-action@v1
         with:
           image-ref: ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
-      
+ 
+
