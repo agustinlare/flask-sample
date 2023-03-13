@@ -33,6 +33,10 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    env:
+      DOCKER_IMAGE: "agustinlare/galsandbox"
+      DOCKER_TAG: ${{ github.sha }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
