@@ -66,12 +66,13 @@ jobs:
 
   deplyo-to-linode:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
     needs: [validate-yaml, scan-image]
 
     steps:
       - name: Echo something
-        run: echo "Hello, world!"
-        
+        run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+
       # - name: Checkout code
       #   uses: actions/checkout@v2
 
