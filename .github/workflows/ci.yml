@@ -62,17 +62,23 @@ jobs:
     if: github.event.pull_request.merged == false
 
     steps:
-      - name: Scan for vulnerabilities
-        uses: crazy-max/ghaction-container-scan@v2
-        with:
-          image:  ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+        - name: Scan for vulnerabilities
+          run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+    #   - name: Scan for vulnerabilities
+    #     uses: crazy-max/ghaction-container-scan@v2
+    #     with:
+    #       image:  ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
 
   deplyo-to-linode:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'deploy-ready')
+    needs: [validate-yaml, scan-image]
 
     steps:
-      - name: Echo something
+      - name: Wait for label
+        if: "!contains(github.event.pull_request.labels.*.name, 'deploy-ready')"
+        run: sleep 60
+        
+      - name: Kubernetes apply
         run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
 
       # - name: Checkout code
