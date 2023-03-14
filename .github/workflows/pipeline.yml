@@ -67,7 +67,7 @@ jobs:
   deplyo-to-linode:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
-    
+
     env:
       DOCKER_IMAGE: "agustinlare/galsandbox"
       DOCKER_TAG: ${{ github.sha }}
@@ -94,13 +94,15 @@ jobs:
     needs: deplyo-to-linode
 
     steps:
-      - name: Notify on Discord
+      - name: Send Discord Notification
         if: ${{ github.event.state == 'success' || github.event.state == 'failure' }}
-        uses: appleboy/discord-action@master
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          message: |
-            Job **${{ github.workflow }}** completed with status **${{ github.event.state }}**.
+        run: |
+          message="Workflow ${{ github.workflow }} finished with status ${{ job.status }}"
+
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\":\"$message\"}" \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
       
   reopen-pr:
     runs-on: ubuntu-latest
