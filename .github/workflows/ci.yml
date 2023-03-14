@@ -69,7 +69,8 @@ jobs:
 
   deplyo-to-linode:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'deploy-ready')
+    needs: [build-and-push, validate-yaml]
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-ready')
 
     steps:
       - name: Echo something
