@@ -2,6 +2,7 @@ name: CICD
 
 on:
   pull_request:
+    types: [closed]
     branches: 
       - main
 
@@ -12,7 +13,6 @@ env:
 jobs:
   validate-yaml:
     runs-on: ubuntu-latest
-    # if: github.event.pull_request.merged == false
 
     steps:
       - name: Checkout code
@@ -30,11 +30,17 @@ jobs:
 
       - name: Validate Kubernetes manifest
         run: kubeval manifest.yaml
+  
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Quality gate action
+        run: "No encontre uno que sea gratis"
 
   build-and-push:
     runs-on: ubuntu-latest
-    needs: validate-yaml
-    # if: github.event.pull_request.merged == false
+    needs: [validate-yaml, code-quality]
 
     steps:
       - name: Checkout code
@@ -57,40 +63,57 @@ jobs:
   scan-image:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.event.pull_request.merged == false
 
     steps:
-        - name: Scan for vulnerabilities
-          run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+      - name: Scan for vulnerabilities
+        uses: crazy-max/ghaction-container-scan@v2
+        with:
+          image:  ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
 
+  promote:
+    runs-on: ubuntu-latest
+    needs: scan-image
+
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Pull Docker image
+        run: docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
+
+      - name: Retag Docker image
+        run: |
+          docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+          echo "::set-output name=retagged-image::${DOCKER_IMAGE}:latest"
+          
   deplyo-to-linode:
     runs-on: ubuntu-latest
-    # if: github.event.pull_request.merged == true
-
-    env:
-      DOCKER_IMAGE: "agustinlare/galsandbox"
-      DOCKER_TAG: ${{ github.sha }}
+    needs: promote
 
     steps:
       - name: Kubernetes apply
-        run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+        run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:latest
 
-      # - name: Checkout code
-      #   uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      # - name: Kubernetes set context
-      #   uses: Azure/k8s-set-context@v1
-      #   with:
-      #     method: kubeconfig
-      #     kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      - name: Kubernetes set context
+        uses: Azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-      # - name: Kubernetes apply
-      #   run: |
-      #     kubectl apply -f ./manifest.yaml
+      - name: Kubernetes apply
+        run: |
+          kubectl apply -f ./manifest.yaml
 
   notify-on-discord:
     runs-on: ubuntu-latest
     needs: deplyo-to-linode
+    if: failure() || success()
 
     steps:
       - name: Send Discord Notification
@@ -105,7 +128,7 @@ jobs:
       
   reopen-pr:
     runs-on: ubuntu-latest
-    if: failure() && github.event.pull_request.merged == true
+    if: failure()
     needs: deplyo-to-linode
 
     steps:
