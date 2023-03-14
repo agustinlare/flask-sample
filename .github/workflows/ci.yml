@@ -70,7 +70,6 @@ jobs:
   deplyo-to-linode:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
-    needs: [validate-yaml, scan-image]
 
     steps:
       - name: Echo something
