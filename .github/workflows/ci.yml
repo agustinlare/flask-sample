@@ -71,10 +71,13 @@ jobs:
 
   deplyo-to-linode:
     runs-on: ubuntu-latest
-    needs: [build-and-push, validate-yaml]
-    if: contains(github.event.pull_request.labels.*.name, 'deploy-ready')
+    needs: [validate-yaml, scan-image]
 
     steps:
+      - name: Wait for label
+        if: "!contains(github.event.pull_request.labels.*.name, 'deploy-ready')"
+        run: sleep 60
+        
       - name: Kubernetes apply
         run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
 
