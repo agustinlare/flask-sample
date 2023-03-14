@@ -62,10 +62,12 @@ jobs:
     if: github.event.pull_request.merged == false
 
     steps:
-      - name: Scan for vulnerabilities
-        uses: crazy-max/ghaction-container-scan@v2
-        with:
-          image:  ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+        - name: Scan for vulnerabilities
+          run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+    #   - name: Scan for vulnerabilities
+    #     uses: crazy-max/ghaction-container-scan@v2
+    #     with:
+    #       image:  ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
 
   deplyo-to-linode:
     runs-on: ubuntu-latest
@@ -73,7 +75,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'deploy-ready')
 
     steps:
-      - name: Echo something
+      - name: Kubernetes apply
         run: echo "Hello, world!" ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
 
       # - name: Checkout code
