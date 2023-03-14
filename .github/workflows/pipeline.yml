@@ -95,8 +95,8 @@ jobs:
 
     steps:
       - name: Send Discord Notification
-        if: ${{ github.event.state == 'success' || github.event.state == 'failure' }}
         run: |
+          echo "Hello"
           message="Workflow ${{ github.workflow }} finished with status ${{ job.status }}"
 
           curl -H "Content-Type: application/json" \
