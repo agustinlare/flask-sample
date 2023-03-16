@@ -68,7 +68,7 @@ jobs:
           
   deplyo-to-linode:
     runs-on: ubuntu-latest
-    needs: [promote, scan-image, validate-yaml]
+    needs: [scan-image, validate-yaml]
 
     steps:
       - name: Checkout code
