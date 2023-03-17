@@ -1,21 +1,21 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: galsandbox
+  name: galicia
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: galsandbox
+      app: galicia
   template:
     metadata:
       labels:
-        app: galsandbox
+        app: galicia
     spec:
       containers:
-        - name: galsandbox
+        - name: galicia
           image: >-
-            agustinlare/galsandbox
+            agustinlare/galicia
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -39,13 +39,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: galsandbox-service
+  name: galicia-service
   labels:
-    app: galsandbox
+    app: galicia
 spec:
   type: LoadBalancer
   selector:
-    app: galsandbox
+    app: galicia
   ports:
     - protocol: TCP
       name: http
